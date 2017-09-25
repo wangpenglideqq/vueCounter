@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="js/vue.js"></script>
+    <script src="js/vue-router.js"></script>
+    <script src="https://unpkg.com/vuex"></script>
+    <style>
+        #app{
+            color: white;
+            width: 400px;
+            /*box-sizing: border-box;*/
+            border: 1px solid #000;
+        }
+        .result{
+            height: 150px;
+            background: #cccccc;
+            text-align: right;
+            padding-top: 75px;
+            box-sizing: border-box;
+            font-size: 24px;
+        }
+        .enter{
+            height: 50px;
+            background: #cccccc;
+            text-align: right;
+
+        }
+        .keys{
+            width: 400px;
+        }
+        .list div{
+            cursor: pointer;
+            background: #46cc1c;
+            float: left;
+            width: 100px;
+            height: 120px;
+            border: 1px solid #000;
+            box-sizing: border-box;
+            /*border-left: none;*/
+            /*border-bottom: none;*/
+            text-align: center;
+            line-height: 120px;
+        }
+        .list div:last-child{
+            background: #ff9a65;
+            color: white;
+        }
+        .list div:first-child{
+            color: red;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="result">
+        <!--绑定计算属性result-->
+        {{ result }}
+    </div>
+    <div class="enter">
+        <!--绑定计算属性enter-->
+        {{ enter === ""?0:enter}}
+    </div>
+    <div class="keys">
+        <div class="list">
+            <!--键盘区域-->
+            <keyboard
+                    v-for="item in keys"
+                    :value="item">
+            </keyboard>
+        </div>
+    </div>
+</div>
+
+<script>
+    const store = new Vuex.Store({
+        state:{
+            result:"",
+            enter:""
+        },
+        //定义名为calculate的mutation
+        mutations:{
+            calculate(state,value){
+                if(value === '='){
+
+                    //按键的值为=，进行结果计算
+                    state.result = eval(state.enter);
+                    state.enter += value;
+
+                }else if(value === 'clear'){
+
+                    //按键的值为clear，清空数据
+                    state.result = state.enter = "";
+
+                }else{
+
+                    //输入结果enter进行拼接
+                    state.enter += value;
+
+                }
+            }
+        }
+    });
+    Vue.component('keyboard',{
+        props:['value'],
+        //点击事件的监听处理getKeyboardValue
+        template:`<div
+             @click="getKeyboardValue"
+             :data-value="value">
+             {{value}}
+           </div>`,
+        methods:{
+            //点击事件处理函数
+            getKeyboardValue(event){
+                //获取当前的按键的值
+                let value=event.target.dataset.value;
+                //通过commit提交mutation
+                this.$store.commit('calculate',value)
+            }
+        }
+    });
+    const app = new Vue({
+        //挂载元素
+        el:"#app",
+        data:{
+            //16个按键的值
+            keys:[
+                'clear', '+', '-', '*',
+                '7', '8', '9', '/',
+                '4', '5', '6', '0',
+                '1', '2', '3', '=',
+            ]
+        },
+        store,
+        //增加计算属性
+        computed:{
+            result(){
+                //通过this.$store获取仓库的数据result
+                return this.$store.state.result;
+            },
+            enter(){
+                //通过this.$store获取仓库的数据result
+                return this.$store.state.enter;
+            }
+        }
+
+    });
+</script>
+</body>
+</html>
